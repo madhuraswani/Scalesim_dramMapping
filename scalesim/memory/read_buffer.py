@@ -5,6 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 from scalesim.memory.read_port import read_port
+from scalesim.memory.dram_mapping import dram_mapping
 
 
 class read_buffer:
@@ -50,6 +51,9 @@ class read_buffer:
 
         self.multibank_trace_Matrix=[]
 
+        #DRAM Mapping
+        self.DramMapping=dram_mapping()
+
         # Flags
         self.active_buf_full_flag = False
         self.hashed_buffer_valid = False
@@ -70,6 +74,7 @@ class read_buffer:
 
         self.backing_buffer = backing_buf_obj
         self.req_gen_bandwidth = backing_buf_bw
+        self.DramMapping.set_params(num_banks,type_of_mapping="Normal")
         
         self.num_banks=num_banks
 
@@ -305,7 +310,7 @@ class read_buffer:
         # 4. Update the variables
         self.last_prefect_cycle = int(response_cycles_arr[-1][0])
 
-        multibank=self.strideBased_Mapping(prefetch_requests,self.num_banks)
+        multibank=self.DramMapping(prefetch_requests)
         for i,bank in enumerate(multibank):
             multibank[i]=np.concatenate((response_cycles_arr, bank), axis=1)
         # Update the trace matrix
@@ -395,7 +400,7 @@ class read_buffer:
 
         assert response_cycles_arr.shape == cycles_arr.shape, 'The request and response cycles dims do not match'
 
-        multibank=self.strideBased_Mapping(prefetch_requests,self.num_banks)
+        multibank=self.DramMapping(prefetch_requests)
         for i, bank in enumerate(multibank):
             multibank[i]= np.concatenate((response_cycles_arr, bank), axis=1)
             self.multibank_trace_Matrix[i]=np.concatenate((self.multibank_trace_Matrix[i],multibank[i]), axis=0)
@@ -462,32 +467,3 @@ class read_buffer:
 
         for i, bank in enumerate(self.multibank_trace_Matrix):
             np.savetxt(filename[:-4]+"_bank_"+str(i)+".csv", bank, fmt='%s', delimiter=",")
-
-    def strideBased_Mapping(self,matrix, num_Banks):
-    # Get the number of rows in the matrix
-        num_rows = matrix.shape[0]
-    # Calculate the number of rows in each submatrix
-        rows_per_submatrix = num_rows // num_Banks
-        remainder = num_rows % num_Banks
-        # Initialize an empty list to store the submatrices
-        submatrices = []
-        # Split the matrix into submatrices
-        start_index = 0
-        for i in range(num_Banks):
-            if remainder > 0:
-                end_index = start_index + rows_per_submatrix + 1
-                remainder -= 1
-            else:
-                end_index = start_index + rows_per_submatrix
-            # Extract the submatrix and pad if necessary
-            submatrix = matrix[start_index:end_index]
-            if submatrix.shape[0] < rows_per_submatrix and i != num_Banks - 1:
-                pad_rows = rows_per_submatrix - submatrix.shape[0]
-                submatrix = np.pad(submatrix, ((0, pad_rows), (0, 0)), mode='constant', constant_values=-1)
-            submatrices.append(submatrix)
-            start_index = end_index
-        for i in range(num_Banks):
-            pad_rows=num_rows-submatrices[i].shape[0]
-            submatrices[i]=np.pad(submatrices[i], ((0, pad_rows), (0, 0)), mode='constant', constant_values=-1)
-            
-        return submatrices
