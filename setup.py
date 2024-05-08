@@ -17,7 +17,6 @@ setup(
     author_email='anandsamajdar@gatech.edu',
     maintainer='SynergyLab, GT',
     maintainer_email='ritik.raj@gatech.edu',
-    url='https://github.com/scalesim-project/scale-sim-v2',
     license="MIT",
     packages=find_packages(),
     include_package_data=False,                                 # The include_package_data argument controls whether non-code files are copied when your package is installed

@@ -5,11 +5,11 @@ from scalesim.scale_sim import scalesim
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', metavar='Topology file', type=str,
-                        default="C:/Users/Madhur/Documents/IITD/Scalesim_dramMapping/topologies/conv_nets/alexnet_part.csv",
+                        default="./topologies/conv_nets/alexnet_part.csv",
                         help="Path to the topology file"
                         )
     parser.add_argument('-c', metavar='Config file', type=str,
-                        default="C:/Users/Madhur/Documents/IITD/Scalesim_dramMapping/configs/scale.cfg",
+                        default="./configs/scale.cfg",
                         help="Path to the config file"
                         )
     parser.add_argument('-p', metavar='log dir', type=str,
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     if inp_type == 'gemm':
         gemm_input = True
 
-    s = scalesim(save_disk_space=True, verbose=True,
+    s = scalesim(save_disk_space=False, verbose=True,
                  config=config,
                  topology=topology
                  )
