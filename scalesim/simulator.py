@@ -91,8 +91,8 @@ class simulator:
                 avg_ifmap_bw = avg_bw_items[3]
                 avg_filter_bw = avg_bw_items[4]
                 avg_ofmap_bw = avg_bw_items[5]
-                print('Average IFMAP DRAM BW: ' + "{:.3f}".format(avg_ifmap_bw*self.conf.get_membanks_as_list()[0]) + ' words/cycle')
-                print('Average Filter DRAM BW: ' + "{:.3f}".format(avg_filter_bw*self.conf.get_membanks_as_list()[1]) + ' words/cycle')
+                print('Average IFMAP DRAM BW: ' + "{:.3f}".format(avg_ifmap_bw) + ' words/cycle')
+                print('Average Filter DRAM BW: ' + "{:.3f}".format(avg_filter_bw) + ' words/cycle')
                 print('Average OFMAP DRAM BW: ' + "{:.3f}".format(avg_ofmap_bw) + ' words/cycle')
 
             if self.save_trace:

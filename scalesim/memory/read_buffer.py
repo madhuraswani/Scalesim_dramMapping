@@ -74,7 +74,7 @@ class read_buffer:
 
         self.backing_buffer = backing_buf_obj
         self.req_gen_bandwidth = backing_buf_bw
-        self.DramMapping.set_params(num_banks,type_of_mapping="Normal")
+        self.DramMapping.set_params(num_banks,type_of_mapping="Novel")
         
         self.num_banks=num_banks
 
@@ -449,6 +449,13 @@ class read_buffer:
         assert self.trace_valid, 'Traces not ready yet'
         start_cycle = self.trace_matrix[0][0]
         end_cycle = self.trace_matrix[-1][0]
+
+        return start_cycle, end_cycle
+    
+    def get_external_access_start_stop_cycles_multiple_bank(self):
+        assert self.trace_valid, 'Traces not ready yet'
+        start_cycle = self.multibank_trace_Matrix[0][0][0]
+        end_cycle = self.multibank_trace_matrix[0][0][-1]
 
         return start_cycle, end_cycle
 

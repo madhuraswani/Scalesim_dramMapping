@@ -247,16 +247,26 @@ class single_layer_sim:
 
         self.ifmap_dram_start_cycle, self.ifmap_dram_stop_cycle, self.ifmap_dram_reads \
             = self.memory_system.get_ifmap_dram_details()
+        
+        
 
         self.filter_dram_start_cycle, self.filter_dram_stop_cycle, self.filter_dram_reads \
             = self.memory_system.get_filter_dram_details()
 
         self.ofmap_dram_start_cycle, self.ofmap_dram_stop_cycle, self.ofmap_dram_writes \
             = self.memory_system.get_ofmap_dram_details()
+        
+        n_banks=self.config.get_membanks_as_list()
+        if len(n_banks)==2:
+                ifmap_banks=n_banks[0]
+                filter_banks=n_banks[1]
+        else:
+            ifmap_banks=n_banks[0]
+            filter_banks=n_banks[0]
 
         # BW calc for DRAM access
-        self.avg_ifmap_dram_bw = self.ifmap_dram_reads / (self.ifmap_dram_stop_cycle - self.ifmap_dram_start_cycle + 1)
-        self.avg_filter_dram_bw = self.filter_dram_reads / (self.filter_dram_stop_cycle - self.filter_dram_start_cycle + 1)
+        self.avg_ifmap_dram_bw = self.ifmap_dram_reads / ((self.ifmap_dram_stop_cycle - self.ifmap_dram_start_cycle + 1)//ifmap_banks)
+        self.avg_filter_dram_bw = self.filter_dram_reads / ((self.filter_dram_stop_cycle - self.filter_dram_start_cycle + 1)//filter_banks)
         self.avg_ofmap_dram_bw = self.ofmap_dram_writes / (self.ofmap_dram_stop_cycle - self.ofmap_dram_start_cycle + 1)
 
         self.report_items_ready = True

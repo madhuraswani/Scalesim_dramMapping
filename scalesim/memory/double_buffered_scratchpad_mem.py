@@ -457,6 +457,7 @@ class double_buffered_scratchpad:
             = self.ifmap_buf.get_external_access_start_stop_cycles()
 
         return self.ifmap_dram_start_cycle, self.ifmap_dram_stop_cycle, self.ifmap_dram_reads
+        
 
     #
     def get_filter_dram_details(self):

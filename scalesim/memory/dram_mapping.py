@@ -16,7 +16,9 @@ class dram_mapping:
 
     def __call__(self, input) -> np.Any:
         mappings={
-            "Normal": self.Normal_Mapping
+            "Normal": self.Normal_Mapping,
+            "Novel": self.novel_mapping
+
         }
         submatrices=mappings[self.type_of_Mapping](input,self.num_banks)
         self.num_lines_per_bank=input.shape[0]//self.num_banks
@@ -26,15 +28,57 @@ class dram_mapping:
     Define the mapping in this file and add the mapping to the call function. In the mappings dictionary.
     """
 
-    def alternate_mapping(self,matrix):
+    def novel_mapping(self,matrix):
+        num_banks=self.num_banks
+        bank_acces={i:[] for i in range(num_banks)}
+        sub_matrices=[[] for _ in range(num_banks)]
+        partions_matrices=[[] for _ in range(num_banks)]
+        unresolved=[]
         num_rows = matrix.shape[0]
-        rows_per_submatrix = num_rows // self.num_banks
-        remainder = num_rows % self.num_banks
+        for i in range(0,len(matrix),num_banks):
+            requests_in_cycle=matrix[i:num_banks+i]
+            for j,data in enumerate(requests_in_cycle):
+                for val in data:
+                    in_Bank=0
+                    for k in range(num_banks):
+                        if val in bank_acces[k]:
+                            in_Bank=1
+                    if in_Bank==0:
+                        bank_acces[j].append(val)
 
-        submatrices=[[] for _ in range(self.num_banks)]
-
-        for j in rows_per_submatrix:
-            pass
+        for i in range(0,len(matrix),num_banks):
+            requests_in_cycle=matrix[i:num_banks+i]
+            for j,data in enumerate(requests_in_cycle):
+                for val in data:
+                    for k in range(num_banks):
+                        if val in bank_acces[k]:
+                            sub_matrices[k].append(val)
+            
+            for k in range(num_banks):
+                if len(set(sub_matrices[k]))==matrix.shape[1]:
+                    partions_matrices[k].append(list(set(sub_matrices[k])))
+                    sub_matrices[k]=[]
+                elif len(set(sub_matrices[k]))<matrix.shape[1]:
+                    sub_matrices[k]=list(set(sub_matrices[k]))
+                    remaining_values=matrix.shape[1]-len(sub_matrices[k])
+                    for i in range(remaining_values):
+                        sub_matrices[k].append(-1)
+                    partions_matrices[k].append(sub_matrices[k])
+                    sub_matrices[k]=[]
+                elif len(set(sub_matrices[k]))>matrix.shape[1]:
+                    sub_matrices[k]=list(set(sub_matrices[k]))
+                    partions_matrices[k].append(sub_matrices[k][:matrix.shape[1]])
+                    remaining=sub_matrices[k][matrix.shape[1]:]
+                    remaining_values=matrix.shape[1]-len(remaining)
+                    for i in range(remaining_values):
+                        remaining.append(-1)
+                    partions_matrices[k].append(remaining)
+                    sub_matrices[k]=[]
+        for i in range(num_banks):
+            partions_matrices[i]=np.asarray(partions_matrices[i])
+            pad_rows=num_rows-partions_matrices[i].shape[0]
+            partions_matrices[i]=np.pad(partions_matrices[i], ((0, pad_rows), (0, 0)), mode='constant', constant_values=-1)
+        return partions_matrices
 
     def Normal_Mapping(self,matrix, num_Banks):
     # Get the number of rows in the matrix
